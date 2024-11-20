@@ -4,7 +4,9 @@
   "description": "Generate Mock Data",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "clean": "scripts/clean-dist.sh",
+    "build": "npm run clean && echo Building... && tsc && echo Build Finished ./dist",
+    "start": "node dist/index.js"
   },
   "keywords": [
     "Mock",
