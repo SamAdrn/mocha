@@ -6,7 +6,7 @@
   "scripts": {
     "clean": "scripts/clean-dist.sh",
     "build": "npm run clean && echo Building... && tsc && echo Build Finished ./dist",
-    "start": "node dist/index.js"
+    "start": "npm run build && node dist/index.js"
   },
   "keywords": [
     "Mock",
