@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "clean": "scripts/clean-dist.sh",
-    "build": "npm run clean && echo Building... && tsc && echo Build Finished ./dist",
+    "build": "npm run clean && echo Building... && tsc && echo \"Build Finished ./dist\\n\\n\"",
     "start": "npm run build && node dist/index.js"
   },
   "keywords": [
