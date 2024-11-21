@@ -1,28 +1,17 @@
 import { faker } from '@faker-js/faker';
 import { NumberGenerator } from './number';
-import statesJSON from '../data/us-states.json';
+import { US_STATES } from '../data/us-states.data';
+import { AddressItem } from '../interfaces/address.interface';
 
-const states = statesJSON;
 const location = faker.location;
 const num = NumberGenerator;
-
-/**
- * Represents a full Address
- */
-export interface AddressItem {
-    street1: string;
-    street2: string;
-    city: string;
-    county: string;
-    state: string;
-    zip: string;
-    country: string;
-}
 
 /**
  * A utility for generating addresses.
  */
 export class Address {
+    private static states: Record<string, any> = US_STATES;
+
     /**
      * Generates a random street address (line 1).
      *
@@ -106,6 +95,41 @@ export class Address {
     }
 
     /**
+     * Generates a ZIP code based on the provided prefix and options.
+     *
+     * @param prefix - The initial portion of the ZIP code (e.g., "900" for Los Angeles).
+     * @param options - Optional configuration for the ZIP code.
+     * @param options.nineDigitZip - If `true`, generates a nine-digit ZIP code (e.g., "90001-1234").
+     * @param options.noDashInZip - If `true`, omits the dash in the nine-digit ZIP code (e.g., "900011234").
+     *                               Only applicable when `nineDigitZip` is `true`.
+     * @returns A randomly generated ZIP code string, either in the 5-digit or 9-digit format.
+     *
+     * @example
+     * // Generate a 5-digit ZIP code
+     * Address.zip("900");
+     * // "90012"
+     *
+     * @example
+     * // Generate a 9-digit ZIP code with a dash
+     * Address.zip("900", { nineDigitZip: true });
+     * // "90012-3456"
+     *
+     * @example
+     * // Generate a 9-digit ZIP code without a dash
+     * Address.zip("900", { nineDigitZip: true, noDashInZip: true });
+     * // "900123456"
+     */
+    static zip(
+        prefix: string,
+        options?: { nineDigitZip?: boolean; noDashInZip?: boolean },
+    ): string {
+        const suffix = options?.nineDigitZip
+            ? `${options.noDashInZip ? '' : '-'}${num.randomWithDigits(4)}`
+            : '';
+        return `${prefix}${num.randomWithDigits(2)}${suffix}`;
+    }
+
+    /**
      * Generates a full address object, including street, city, state, county, ZIP code, and country.
      *
      * @param options - Optional configuration for generating the address.
@@ -145,25 +169,23 @@ export class Address {
         nineDigitZip?: boolean;
         noDashInZip?: boolean;
     }): AddressItem {
-        const stateObj = states[num.randomInRange(0, states.length - 1)];
-        const state = options?.stateAbbreviated
-            ? stateObj.abbreviation
-            : stateObj.name;
-        const cityObj =
-            stateObj.cities[num.randomInRange(0, stateObj.cities.length - 1)];
+        const statesMap = Address.states;
+        const statesList = Object.keys(statesMap);
 
-        const city = cityObj.city;
-        const county = cityObj.county;
-        const zip =
-            `${cityObj.zipCodePrefix}${num.randomWithDigits(2)}` +
-            `${options?.nineDigitZip ? `${options.noDashInZip ? '' : '-'}${num.randomWithDigits(4)}` : ''}`;
+        const stateObj =
+            statesMap[statesList[num.randomInRange(0, statesList.length - 1)]];
+        const { name, abbreviation, cities } = stateObj;
+
+        const cityObj = cities[num.randomInRange(0, cities.length - 1)];
+        const { city, county, zipCodePrefix } = cityObj;
+        const zip = this.zip(zipCodePrefix, options);
 
         return {
             street1: location.streetAddress(),
             street2: location.secondaryAddress(),
             city: city,
             county: county,
-            state: state,
+            state: options?.stateAbbreviated ? abbreviation : name,
             zip: zip,
             country: 'US',
         };
