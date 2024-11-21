@@ -5,6 +5,7 @@ import {
     AddressItem,
     DataCity,
     DataState,
+    DataStateMap,
 } from '../interfaces/address.interface';
 import { Helpers } from './helpers';
 
@@ -16,7 +17,7 @@ const num = NumberGenerator;
  * A utility for generating addresses.
  */
 export class Address {
-    private static states: Record<string, any> = US_STATES;
+    private static dataStates: DataStateMap = US_STATES;
 
     /**
      * Generates a random street address (line 1).
@@ -57,27 +58,33 @@ export class Address {
      * @returns A randomly generated city name.
      */
     static city() {
-        return location.city();
+        return h.sample(
+            this.dataStates[this.state({ abbreviated: true })].cities,
+        ).city;
     }
 
     /**
      * Generates a random county name.
      *
-     * @returns A randomly generated county name.
+     * @returns A randomly county name.
      */
     static county() {
-        return location.county();
+        return h.sample(
+            this.dataStates[this.state({ abbreviated: true })].cities,
+        ).county;
     }
 
     /**
      * Generates a random state name.
      *
-     * @param option - Optional configuration for the state name.
+     * @param options - Optional configuration for the state name.
      * @param option.abbreviated - Whether to return the state name in abbreviated form.
-     * @returns A randomly generated state name, abbreviated or full.
+     * @returns A random state name, abbreviated or full.
      */
-    static state(option?: { abbreviated?: boolean }) {
-        return location.state({ abbreviated: option?.abbreviated });
+    static state(options: { abbreviated?: boolean } = {}) {
+        const { abbreviated } = options;
+        const stateCode = h.sample(Object.keys(this.dataStates));
+        return abbreviated ? stateCode : this.dataStates[stateCode].name;
     }
 
     /**
@@ -92,25 +99,28 @@ export class Address {
      *                              when `nineDigitZip` is `true`.
      * @returns A randomly generated ZIP code string, either in the 5-digit or 9-digit format.
      */
-    static zip(options: {
-        prefix?: string;
-        nineDigitZip?: boolean;
-        noDashInZip?: boolean;
-    }): string {
+    static zip(
+        options: {
+            prefix?: string;
+            nineDigitZip?: boolean;
+            noDashInZip?: boolean;
+        } = {},
+    ): string {
         const { prefix = '', nineDigitZip, noDashInZip } = options;
+        const sanitizedPrefix = prefix.replace(/-/g, '');
 
-        const newPrefix = prefix.replace(/-/g, '');
-        const base = newPrefix
-            .slice(0, 5)
-            .padEnd(5, `${num.randomWithDigits(1)}`);
-        const remainder = newPrefix.slice(5, 9);
+        let base = sanitizedPrefix.slice(0, 5);
+        let remainder = sanitizedPrefix.slice(5, 9);
+
+        if (base.length < 5) {
+            base += num.randomWithDigits(5 - base.length);
+        }
 
         if (nineDigitZip) {
-            const extraDigits = remainder.padEnd(
-                4,
-                `${num.randomWithDigits(1)}`,
-            );
-            return `${base}${noDashInZip ? '' : '-'}${extraDigits}`;
+            if (remainder.length < 4) {
+                remainder += num.randomWithDigits(4 - remainder.length);
+            }
+            return `${base}${noDashInZip ? '' : '-'}${remainder}`;
         }
 
         return base;
@@ -130,10 +140,8 @@ export class Address {
         nineDigitZip?: boolean;
         noDashInZip?: boolean;
     }): AddressItem {
-        const statesMap = Address.states;
-        const statesList = Object.keys(statesMap);
-
-        const stateObj: DataState = statesMap[h.sample(statesList)];
+        const stateObj: DataState =
+            this.dataStates[this.state({ abbreviated: true })];
         const { name, abbreviation, cities } = stateObj;
 
         const cityObj = h.sample<DataCity>(cities);
