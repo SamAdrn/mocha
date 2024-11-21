@@ -25,7 +25,7 @@ export interface DataState {
     name: string;
     /** The 2-letter ANSI abbreviation for the state */
     abbreviation: string;
-    /** A list of  */
+    /** A list of cities residing in the state */
     cities: DataCity[];
 }
 
