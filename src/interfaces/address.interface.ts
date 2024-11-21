@@ -38,3 +38,5 @@ export interface DataCity {
     /** The full name of the county the city resides in */
     county: string;
 }
+
+export interface

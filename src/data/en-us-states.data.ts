@@ -1,6 +1,6 @@
 import { DataStateMap } from '../interfaces/address.interface';
 
-export const US_STATES: DataStateMap = {
+export const EN_US_STATES: DataStateMap = {
     CA: {
         name: 'California',
         abbreviation: 'CA',

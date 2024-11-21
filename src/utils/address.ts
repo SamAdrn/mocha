@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { NumberGenerator } from './number';
-import { US_STATES } from '../data/us-states.data';
+import { US_STATES } from '../data/en-us-states.data';
 import {
     AddressItem,
     DataCity,
