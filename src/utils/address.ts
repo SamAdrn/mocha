@@ -1,13 +1,15 @@
 import { faker } from '@faker-js/faker';
 import { NumberGenerator } from './number';
-import { US_STATES } from '../data/en-us-states.data';
+import { EN_US_STATES } from '../data/en-us-states.data';
 import {
     AddressItem,
     DataCity,
+    DataDirectionsMap,
     DataState,
     DataStateMap,
 } from '../interfaces/address.interface';
 import { Helpers } from './helpers';
+import { EN_DIRECTIONS } from '../data/en-directions.data';
 
 const location = faker.location;
 const h = Helpers;
@@ -17,7 +19,38 @@ const num = NumberGenerator;
  * A utility for generating addresses.
  */
 export class Address {
-    private static dataStates: DataStateMap = US_STATES;
+    private static dataStates: DataStateMap = EN_US_STATES;
+    private static dataDirections: DataDirectionsMap = EN_DIRECTIONS;
+
+    /**
+     * Generates a random cardinal or intercardinal direction.
+     *
+     * @param options - Configuration options for the direction generation.
+     * @param options.excludeIntercardinals - If `true`, excludes intercardinal directions
+     *                                        and only returns cardinal directions
+     * @param options.abbreviated - If `true`, returns abbreviated forms.
+     * @returns A random direction as a string, based on the provided options.
+     */
+    static direction(
+        options: {
+            excludeIntercardinals?: boolean;
+            abbreviated?: boolean;
+        } = {},
+    ): string {
+        const { excludeIntercardinals, abbreviated } = options;
+        const i = num.randomInRange(0, excludeIntercardinals ? 3 : 7);
+        let dir;
+
+        if (i > 3) {
+            // Intercardinals
+            dir = this.dataDirections.intercardinal[i % 4];
+        } else {
+            // Cardinals
+            dir = this.dataDirections.cardinal[i];
+        }
+
+        return abbreviated ? dir.abbreviation : dir.name;
+    }
 
     /**
      * Generates a random street address (line 1).
@@ -53,9 +86,7 @@ export class Address {
     }
 
     /**
-     * Generates a random city name.
-     *
-     * @returns A randomly generated city name.
+     * @returns A random city name.
      */
     static city() {
         return h.sample(
@@ -64,9 +95,7 @@ export class Address {
     }
 
     /**
-     * Generates a random county name.
-     *
-     * @returns A randomly county name.
+     * @returns A random county name.
      */
     static county() {
         return h.sample(
@@ -95,7 +124,7 @@ export class Address {
      *                         longer than 9 digits.
      * @param options.nineDigitZip - If `true`, ensures a 9-digit ZIP code is generated.
      * @param options.noDashInZip - If `true`, omits the dash in the nine-digit
-     *                              ZIP code (e.g., "900011234"). Only applicable
+     *                              ZIP code (e.g., `"900011234"`). Only applicable
      *                              when `nineDigitZip` is `true`.
      * @returns A randomly generated ZIP code string, either in the 5-digit or 9-digit format.
      */
@@ -130,19 +159,24 @@ export class Address {
      * Generates a full address object, including street, city, state, county, ZIP code, and country.
      *
      * @param options - Optional configuration for generating the address.
-     * @param options.stateAbbreviated - If `true`, the state will be abbreviated (e.g., "CA" instead of "California").
-     * @param options.nineDigitZip - If `true`, generates a nine-digit ZIP code (e.g., "12345-6789").
-     * @param options.noDashInZip - If `true`, removes the dash in the nine-digit ZIP code (only applies if `nineDigitZip` is `true`).
+     * @param options.stateAbbreviated - If `true`, the state will be abbreviated
+     *                                   (e.g., "CA" instead of "California").
+     * @param options.nineDigitZip - If `true`, generates a nine-digit ZIP code
+     *                               (e.g., "12345-6789").
+     * @param options.noDashInZip - If `true`, removes the dash in the nine-digit
+     *                              ZIP code (only applies if `nineDigitZip` is `true`).
      * @returns An object containing the full address details.
      */
-    static full(options?: {
-        stateAbbreviated?: boolean;
-        nineDigitZip?: boolean;
-        noDashInZip?: boolean;
-    }): AddressItem {
+    static full(
+        options: {
+            stateAbbreviated?: boolean;
+            nineDigitZip?: boolean;
+            noDashInZip?: boolean;
+        } = {},
+    ): AddressItem {
         const stateObj: DataState =
             this.dataStates[this.state({ abbreviated: true })];
-        const { name, abbreviation, cities } = stateObj;
+        const { name: stateName, abbreviation: stateAbbrev, cities } = stateObj;
 
         const cityObj = h.sample<DataCity>(cities);
         const { city, county, zipCodePrefix } = cityObj;
@@ -153,7 +187,7 @@ export class Address {
             street2: location.secondaryAddress(),
             city: city,
             county: county,
-            state: options?.stateAbbreviated ? abbreviation : name,
+            state: options?.stateAbbreviated ? stateAbbrev : stateName,
             zip: zip,
             country: 'US',
         };
