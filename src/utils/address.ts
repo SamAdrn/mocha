@@ -1,5 +1,9 @@
 import { faker } from '@faker-js/faker';
+import { Helpers } from './helpers';
 import { NumberGenerator } from './number';
+import { EN_DIRECTIONS } from '../data/en-directions.data';
+import { EN_STREET_DESCRIPTORS } from '../data/en-street-descriptors.data';
+import { EN_STREET_NAMES } from '../data/en-street-names.data';
 import { EN_US_STATES } from '../data/en-us-states.data';
 import {
     AddressItem,
@@ -7,9 +11,12 @@ import {
     DataDirectionsMap,
     DataState,
     DataStateMap,
+    DataStreetDescriptorMap,
+    DataStreetNames,
+    PatternPrimaryStreetKey,
 } from '../interfaces/address.interface';
-import { Helpers } from './helpers';
-import { EN_DIRECTIONS } from '../data/en-directions.data';
+import { Resolvers } from '../interfaces/general.interface';
+import { EN_STREET_PATTERNS } from '../patterns/en-street.pattern';
 
 const location = faker.location;
 const h = Helpers;
@@ -21,6 +28,26 @@ const num = NumberGenerator;
 export class Address {
     private static dataStates: DataStateMap = EN_US_STATES;
     private static dataDirections: DataDirectionsMap = EN_DIRECTIONS;
+
+    private static dataStreetPatterns = EN_STREET_PATTERNS;
+    private static dataStreetNames: DataStreetNames = EN_STREET_NAMES;
+    private static dataStreetDescriptors: DataStreetDescriptorMap =
+        EN_STREET_DESCRIPTORS;
+
+    private static streetResolvers: Resolvers<PatternPrimaryStreetKey> = {
+        ord: () => num.randomOrdinalInRange(1, 50),
+        street: () => h.sample(this.dataStreetNames),
+        descriptor: () =>
+            h.sample(
+                this.dataStreetDescriptors[
+                    Object.keys(this.dataStreetDescriptors)[
+                        num.randomInRange(0, 2)
+                    ]
+                ],
+            )[Math.random() < 0.5 ? 'abbreviation' : 'name'],
+        dir: () =>
+            this.direction({ excludeIntercardinals: true, abbreviated: true }),
+    };
 
     /**
      * Generates a random cardinal or intercardinal direction.
@@ -63,7 +90,8 @@ export class Address {
         const streetNumber = options?.includeStreetNumber
             ? num.randomWithDigits(num.randomInRange(3, 5)) + ' '
             : '';
-        return `${streetNumber}${location.street()}`;
+        const pattern = h.sample(this.dataStreetPatterns);
+        return `${streetNumber}${h.interpolate(pattern, this.streetResolvers)}`;
     }
 
     /**
@@ -183,7 +211,7 @@ export class Address {
         const zip = this.zip({ ...options, prefix: zipCodePrefix });
 
         return {
-            street1: location.streetAddress(),
+            street1: this.street1({ includeStreetNumber: true }),
             street2: location.secondaryAddress(),
             city: city,
             county: county,

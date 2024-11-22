@@ -60,7 +60,7 @@ export interface DataStreetDescriptor {
 
 /**
  * Represents the structure for a Directions Map, where `cardinal` is a list of
- * the four primary points of a compass, and `intercardinal` is a list of the 
+ * the four primary points of a compass, and `intercardinal` is a list of the
  * four diagonal directions.
  */
 export interface DataDirectionsMap {
@@ -75,3 +75,9 @@ export interface DataDirection {
     /** The abbreviated version of the direction  */
     abbreviation: string;
 }
+
+/** Represents the structure for a Street Name Source */
+export type DataStreetNames = string[];
+
+/** Represents the keys used for a Street pattern */
+export type PatternPrimaryStreetKey = 'ord' | 'street' | 'descriptor' | 'dir';
