@@ -12,6 +12,7 @@ import {
     DataState,
     DataStateMap,
     DataStreetDescriptorMap,
+    DataStreetDescriptorType,
     DataStreetNames,
     PatternPrimaryStreetKey,
 } from '../interfaces/address.interface';
@@ -40,13 +41,18 @@ export class Address {
         descriptor: () =>
             h.sample(
                 this.dataStreetDescriptors[
-                    Object.keys(this.dataStreetDescriptors)[
-                        num.randomInRange(0, 2)
-                    ]
+                    h.chance<DataStreetDescriptorType>([
+                        { val: 'general', prob: 1 / 3 },
+                        { val: 'size', prob: 1 / 3 },
+                        { val: 'function', prob: 1 / 3 },
+                    ])
                 ],
-            )[Math.random() < 0.5 ? 'abbreviation' : 'name'],
+            )[h.chance<'abbreviation' | 'name'>('abbreviation', 'name', 0.5)],
         dir: () =>
-            this.direction({ excludeIntercardinals: true, abbreviated: true }),
+            this.direction({
+                excludeIntercardinals: false,
+                abbreviated: h.chance<boolean>(true, false, 0.5),
+            }),
     };
 
     /**

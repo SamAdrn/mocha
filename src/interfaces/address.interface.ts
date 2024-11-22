@@ -39,22 +39,45 @@ export interface DataCity {
     county: string;
 }
 
-/**
- * Represents the structure for a Street Descriptor Map, where `category`
- * indicates category that the street descriptors contained fall in.
- */
-export interface DataStreetDescriptorMap {
-    [category: string]: DataStreetDescriptor[];
-}
+/** Represents the structure for a Street Name Source */
+export type DataStreetNames = string[];
+
+/** Represents the structure for a Street Descriptor Map */
+export type DataStreetDescriptorMap = Record<
+    DataStreetDescriptorType,
+    DataStreetDescriptor[]
+>;
+
+/** Categories of Street Desciptors that serve as keys to the `DataStreetDescriptorMap` */
+export type DataStreetDescriptorType = 'general' | 'size' | 'function';
 
 /**
  * Represents the structure for a Street Descriptor Source, which contains the
- * suffixes or types using in street names to descripe the purpose of the street.
+ * suffixes or types used in street names to describe the purpose of the street.
  */
 export interface DataStreetDescriptor {
     /** The street descriptor */
     name: string;
     /** The abbreviated version of the street descriptor */
+    abbreviation: string;
+}
+
+/** Represents the structure for a Secondary Address Descriptor Map */
+export interface DataSecondaryDescriptorMap {
+    /** Secondary Address Descriptors used for residential purposes */
+    residential: DataStreetDescriptor[];
+    /** Secondary Address Descriptors used for commercial purposes */
+    commercial: DataStreetDescriptor[];
+}
+
+/**
+ * Represents the structure for a Secondary Address Descriptor Source, which
+ * contains the prefixes to describe the Secondary ADdress.
+ */
+export interface DataSecondaryDescriptor {
+    /** The secondary address descriptor */
+    name: string;
+    /** The abbreviated version of the secondary address descriptor */
     abbreviation: string;
 }
 
@@ -75,9 +98,6 @@ export interface DataDirection {
     /** The abbreviated version of the direction  */
     abbreviation: string;
 }
-
-/** Represents the structure for a Street Name Source */
-export type DataStreetNames = string[];
 
 /** Represents the keys used for a Street pattern */
 export type PatternPrimaryStreetKey = 'ord' | 'street' | 'descriptor' | 'dir';
