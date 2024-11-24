@@ -1,7 +1,8 @@
-import { faker } from '@faker-js/faker';
 import { Helpers } from './helpers';
 import { NumberGenerator } from './number';
+import { StringGenerator } from './strings';
 import { EN_DIRECTIONS } from '../data/en-directions.data';
+import { EN_SECONDARY_DESCRIPTOR } from '../data/en-secondary-descriptors';
 import { EN_STREET_DESCRIPTORS } from '../data/en-street-descriptors.data';
 import { EN_STREET_NAMES } from '../data/en-street-names.data';
 import { EN_US_STATES } from '../data/en-us-states.data';
@@ -9,6 +10,9 @@ import {
     AddressItem,
     DataCity,
     DataDirectionsMap,
+    DataSecondaryDescriptor,
+    DataSecondaryDescriptorMap,
+    DataSecondaryDescriptorType,
     DataState,
     DataStateMap,
     DataStreetDescriptorMap,
@@ -19,9 +23,9 @@ import {
 import { Resolvers } from '../interfaces/general.interface';
 import { EN_STREET_PATTERNS } from '../patterns/en-street.pattern';
 
-const location = faker.location;
 const h = Helpers;
 const num = NumberGenerator;
+const str = StringGenerator;
 
 /**
  * A utility for generating addresses.
@@ -34,6 +38,9 @@ export class Address {
     private static dataStreetNames: DataStreetNames = EN_STREET_NAMES;
     private static dataStreetDescriptors: DataStreetDescriptorMap =
         EN_STREET_DESCRIPTORS;
+
+    private static dataSecondaryDescriptors: DataSecondaryDescriptorMap =
+        EN_SECONDARY_DESCRIPTOR;
 
     private static streetResolvers: Resolvers<PatternPrimaryStreetKey> = {
         ord: () => num.randomOrdinalInRange(1, 50),
@@ -106,17 +113,17 @@ export class Address {
      * @returns A randomly generated secondary address.
      */
     static street2(): string {
-        return location.secondaryAddress();
-    }
-
-    /**
-     * Generates a complete street address, including street number and
-     * secondary address.
-     *
-     * @returns A complete randomly generated street address.
-     */
-    static streetAddress() {
-        return location.streetAddress(true);
+        const descriptor = h.sample<DataSecondaryDescriptor>(
+            this.dataSecondaryDescriptors[
+                h.chance<DataSecondaryDescriptorType>(
+                    'residential',
+                    'commercial',
+                    0.5,
+                )
+            ],
+        );
+        const identifier = `${num.randomWithDigits(num.randomInRange(1, 2))}${str.upper()}`;
+        return `${descriptor} ${identifier}`;
     }
 
     /**
@@ -218,7 +225,7 @@ export class Address {
 
         return {
             street1: this.street1({ includeStreetNumber: true }),
-            street2: location.secondaryAddress(),
+            street2: this.street2(),
             city: city,
             county: county,
             state: options?.stateAbbreviated ? stateAbbrev : stateName,

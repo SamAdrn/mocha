@@ -63,23 +63,19 @@ export interface DataStreetDescriptor {
 }
 
 /** Represents the structure for a Secondary Address Descriptor Map */
-export interface DataSecondaryDescriptorMap {
-    /** Secondary Address Descriptors used for residential purposes */
-    residential: DataStreetDescriptor[];
-    /** Secondary Address Descriptors used for commercial purposes */
-    commercial: DataStreetDescriptor[];
-}
+export type DataSecondaryDescriptorMap = Record<
+    DataSecondaryDescriptorType,
+    DataSecondaryDescriptor[]
+>;
+
+/** Categories of Secondary Desciptors that serve as keys to the `DataSecondaryDescriptorMap` */
+export type DataSecondaryDescriptorType = 'residential' | 'commercial';
 
 /**
- * Represents the structure for a Secondary Address Descriptor Source, which
+ * Represents the type for a Secondary Address Descriptor Source, which
  * contains the prefixes to describe the Secondary ADdress.
  */
-export interface DataSecondaryDescriptor {
-    /** The secondary address descriptor */
-    name: string;
-    /** The abbreviated version of the secondary address descriptor */
-    abbreviation: string;
-}
+export type DataSecondaryDescriptor = string
 
 /**
  * Represents the structure for a Directions Map, where `cardinal` is a list of

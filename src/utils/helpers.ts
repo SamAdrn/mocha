@@ -115,7 +115,7 @@ export class Helpers {
      * Executes one or more provided functions/values based on specified
      * probabilities.
      *
-     * This implementation supports two overloads:
+     * This implementation supports three overloads:
      * 1. Executes one of two functions (`func1`, `func2`) based on a single
      *    probability (`prob`).
      * 2. Executes one of multiple functions provided in a list, each associated
