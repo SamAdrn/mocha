@@ -1,5 +1,5 @@
 {
-  "name": "mock-data-generator",
+  "name": "mocha",
   "version": "1.0.0",
   "description": "Generate Mock Data",
   "main": "index.js",
