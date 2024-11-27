@@ -110,29 +110,55 @@ export class Address {
     /**
      * Generates a secondary street address.
      *
+     * @param type - Optional configuration to have a `'residential'` type
+     *               address or a `'commercial'` type. The difference lies in
+     *               the descriptor use (e.g., `'Apt.'` vs. `'Dept.'`)
      * @returns A randomly generated secondary address.
      */
-    static street2(): string {
+    static street2(type?: DataSecondaryDescriptorType): string {
+        const descriptorType =
+            type ||
+            h.chance<DataSecondaryDescriptorType>(
+                'residential',
+                'commercial',
+                0.5,
+            );
         const descriptor = h.sample<DataSecondaryDescriptor>(
-            this.dataSecondaryDescriptors[
-                h.chance<DataSecondaryDescriptorType>(
-                    'residential',
-                    'commercial',
-                    0.5,
-                )
-            ],
+            this.dataSecondaryDescriptors[descriptorType],
         );
         const identifier = `${num.randomWithDigits(num.randomInRange(1, 2))}${str.upper()}`;
         return `${descriptor} ${identifier}`;
     }
 
     /**
+     * @param state - Optional configuration to return a city name within the
+     *                state (supports both the abbrevation and the full name)
+     * @param atFailure - When set to `'error'`, the method will fail if the
+     *                    specified state is not a known state by the class.
+     *                    When set to `'random'`, which is the default, it
+     *                    selects any other random state instead
      * @returns A random city name.
      */
-    static city() {
-        return h.sample(
-            this.dataStates[this.state({ abbreviated: true })].cities,
-        ).city;
+    static city(state?: string, atFailure: 'error' | 'random' = 'random') {
+        let stateObj: DataState | undefined;
+        if (state && state in this.dataStates) {
+            stateObj = this.dataStates[state];
+        } else {
+            stateObj = Object.entries(this.dataStates).find(
+                ([_, o]) => o.name === state,
+            )?.[1];
+            if (!stateObj) {
+                if (atFailure === 'error') {
+                    throw new Error(
+                        `Specified state "${state}" is not available.`,
+                    );
+                } else {
+                    stateObj =
+                        this.dataStates[this.state({ abbreviated: true })];
+                }
+            }
+        }
+        return h.sample(stateObj.cities).city;
     }
 
     /**

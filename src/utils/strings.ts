@@ -115,8 +115,8 @@ export class StringGenerator {
 
             if (options.uppercase) charPool += this.UPPER;
             if (options.lowercase) charPool += this.LOWER;
-            if (options.numerics) charPool += this.NUMERIC;
             if (options.symbols) charPool += this.SYMBOL;
+            if (options.numerics) charPool += this.NUMERIC;
         }
 
         if (!charPool) {
